@@ -7,15 +7,10 @@
 
 #include "graphics.h"
 
-enum class Key_state : uint8_t {released = 0, pressed = 1};
-
-template<typename T>
-using Inst_fun = void (T::*)();
-
 class Chip8 final
 {
 public:
-    Chip8(const std::string& path); 
+    explicit Chip8(const std::string& path); 
     Chip8() = delete;
     ~Chip8() = default;
     Chip8(const Chip8& other) = delete;
@@ -30,7 +25,7 @@ private:
     void load_game(const std::string& path);
     void handle_opcode();
     void update_timers();
-    void update_key(sf::Event& event, const uint8_t state);
+    void update_key(const sf::Event& event, const uint8_t state);
     void init_font();
     void init_opcode_table();
     void init_opcode_args();
@@ -70,40 +65,52 @@ private:
     void inst_FX55();
     void inst_FX65();
 
-    static constexpr bool debug = true;
-    static constexpr uint16_t memory_size_ = 4096;
-    static constexpr uint8_t res_width_ = 64;
-    static constexpr uint8_t res_height_ = 32;
-    static constexpr uint8_t stack_depth_ = 16;
-    static constexpr uint8_t reg_amount_= 16;
-    static constexpr uint8_t key_amount_ = 16;  
-    static constexpr uint16_t program_start_address_ = 0x200;
-    static constexpr uint8_t font_set_size_ = 80;
-    static constexpr uint8_t max_val_= 0xFF;
-    static constexpr uint8_t vf_ = 0xF;
-    std::array<uint8_t, memory_size_> memory_;
-    uint16_t pc_;
-    uint16_t i_;
-    std::array<uint16_t, stack_depth_> stack_;
-    uint16_t sp_;
-    std::array<unsigned char, reg_amount_> v_;
-    uint16_t opcode_;
+    enum class Key_state : uint8_t 
+    {
+        released = 0,
+        pressed = 1
+    };
+    static constexpr uint16_t MEMORY_SIZE = 4096;
+    static constexpr uint8_t RES_WIDTH = 64;
+    static constexpr uint8_t RES_HEIGHT = 32;
+    static constexpr uint8_t STACK_DEPTH = 16;
+    static constexpr uint8_t REG_AMOUNT= 16;
+    static constexpr uint8_t KEY_AMOUNT = 16;  
+    static constexpr uint8_t SCALE_FACTOR = 10;
+    static constexpr uint16_t PROGRAM_START_ADDRESS = 0x200;
+    static constexpr uint8_t FONT_SET_SIZE = 80;
+    static constexpr uint8_t MAX_VAL= 0xFF; 
+
+    std::array<uint8_t, MEMORY_SIZE> _memory; 
+    struct
+    {
+        uint16_t pc;
+        uint16_t i;
+        uint16_t sp;
+        std::array<unsigned char, REG_AMOUNT> v;
+    } _cpu;
+    std::array<uint16_t, STACK_DEPTH> _stack;
+    
+    uint16_t _opcode;
     struct 
     {
-        uint16_t nnn_;
-        uint8_t nn_;
-        uint8_t n_;
-        uint8_t x_;
-        uint8_t y_;
-    }opcode_args_;
+        uint16_t nnn;
+        uint8_t nn;
+        uint8_t n;
+        uint8_t x;
+        uint8_t y;
+    } _opcode_args;
+
     struct 
     {
-        uint8_t delay_;
-        uint8_t sound_;
-    }timer_;   
-    std::array<std::array<uint8_t, res_width_>, res_height_> display_;
-    std::array<uint16_t, key_amount_> keypad_;
-    std::map<uint16_t, Inst_fun<Chip8>> opcode_table_;
-    Graphics graphics_;
+        uint8_t _delay;
+        uint8_t _sound;
+    } _timer;   
+    std::array<std::array<uint8_t, RES_WIDTH>, RES_HEIGHT> _display;
+    std::array<uint16_t, KEY_AMOUNT> _keypad;
+    template<typename T>
+    using Inst_fun = void (T::*)();
+    std::map<uint16_t, Inst_fun<Chip8>> _opcode_table;
+    Graphics _graphics;
 
 };

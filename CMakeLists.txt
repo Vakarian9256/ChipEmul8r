@@ -4,9 +4,8 @@ cmake_minimum_required(VERSION 3.15)
 project(chip8)
 
 set(CMAKE_CXX_STANDARD 17)
-find_package(SFML 2.5 
-COMPONENTS 
-system window graphics audio REQUIRED)
+set(SFML_LIBS sfml-system sfml-graphics sfml-window)
+
 include_directories(${chip8_SOURCE_DIR}/include)
 
 set(SOURCE_FILES
@@ -14,8 +13,9 @@ set(SOURCE_FILES
     ../src/chip8.cpp
     ../src/main.cpp)
 
-
-add_executable(emulator ${SOURCE_FILES})
-target_link_libraries(emulator sfml-graphics)
-
-install(TARGETS emulator DESTINATION bin)
+if(SFML_LIBS)
+  add_executable(emulator ${SOURCE_FILES})
+  target_link_libraries(emulator ${SFML_LIBS})
+else()
+  message("[ERROR]: Install SFML Package.\n")
+endif()

@@ -5,7 +5,6 @@
 
 int main(int argc, char **argv)
 {
-    std::cout << "hey" << std::endl;
 	if (argc != 2)
 	{
         std::cerr << "[Usage]:" << argv[0] << " <ROM file>." << std::endl;
@@ -16,8 +15,8 @@ int main(int argc, char **argv)
         std::cerr << "[Path]:" << argv[1] << " does not exist." << std::endl;
         exit(EXIT_FAILURE);
     }
-    Chip8 vm{ argv[1] };
+    Chip8 vm(argv[1]);
     vm.run();
-   return 0;
+    return 0;
 }
 
