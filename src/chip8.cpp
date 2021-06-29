@@ -27,15 +27,15 @@ Chip8::Chip8(const std::string& path) :  _opcode(0), _graphics(RES_WIDTH, RES_HE
 
 void Chip8::run()
 {
-	while (_graphics._window.isOpen())
+	while (_graphics.window.isOpen())
 	{
         sf::Event event;
-		while (_graphics._window.pollEvent(event))
+		while (_graphics.window.pollEvent(event))
 		{
 			switch (event.type)
 			{
 				case sf::Event::Closed:
-                    _graphics._window.close();
+                    _graphics.window.close();
 				    break;
                 case sf::Event::KeyPressed:
                     update_key(event, static_cast<uint8_t>(Key_state::pressed));
@@ -106,7 +106,7 @@ void Chip8::update_key(const sf::Event& event, uint8_t state)
             _keypad[15] = state;
             break;
         case sf::Keyboard::Escape:
-            _graphics._window.close();
+            _graphics.window.close();
             break;
         default:
             break;
