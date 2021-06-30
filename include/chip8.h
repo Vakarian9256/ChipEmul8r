@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <array>
-#include <unordered_map>
+#include <map>
 
 #include "graphics.h"
 
@@ -18,9 +18,7 @@ public:
     Chip8& operator=(const Chip8& other) = delete;
     constexpr Chip8& operator=(Chip8&& other) = delete; 
     void run();
-
-
-  
+    
 private:
     void load_game(const std::string& path);
     void handle_opcode();
@@ -29,7 +27,6 @@ private:
     void init_font();
     void init_opcode_table();
     void init_opcode_args();
-
     void inst_00E0();
     void inst_00EE();
     void inst_1NNN();
@@ -90,7 +87,6 @@ private:
         std::array<unsigned char, REG_AMOUNT> v;
     } _cpu;
     std::array<uint16_t, STACK_DEPTH> _stack;
-    
     uint16_t _opcode;
     struct 
     {
@@ -100,7 +96,6 @@ private:
         uint8_t x;
         uint8_t y;
     } _opcode_args;
-
     struct 
     {
         uint8_t _delay;
@@ -110,7 +105,6 @@ private:
     std::array<uint16_t, KEY_AMOUNT> _keypad;
     template<typename T>
     using Inst_fun = void (T::*)();
-    std::unordered_map<uint16_t, Inst_fun<Chip8>> _opcode_table;
+    std::map<uint16_t, Inst_fun<Chip8>> _opcode_table;
     Graphics _graphics;
-
 };

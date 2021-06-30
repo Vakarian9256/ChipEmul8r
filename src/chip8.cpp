@@ -123,11 +123,11 @@ void Chip8::handle_opcode()
 {
     _opcode = _memory[_cpu.pc] << 8 | _memory[_cpu.pc + 1];
     const uint16_t curr_pc = _cpu.pc;
-    bool exec_inst = false;
-    init_opcode_args();
-    init_opcode_table();
-    auto inst = _opcode_table.find_if(_opcode_table.begin(), _opcode_table.end(),
-                                     [auto entry]{(return _opcode | entry.first) == entry.first;});
+    auto inst = std::find_if(_opcode_table.begin(), _opcode_table.end(),
+                             [this](const auto& entry)
+                             {
+                                return (((entry.first & _opcode) == _opcode) && ((entry.first | _opcode) == entry.first));
+                             });
     if (inst == _opcode_table.end())
     {
         std::stringstream hex;
@@ -136,7 +136,8 @@ void Chip8::handle_opcode()
     }
     else
     {
-        *(this->*inst.second)();
+        init_opcode_args();
+        (this->*((*inst).second))();
         std::cout << "Executed Opcode " << "0x" << std::hex << _opcode << " at address 0x" << std::hex << curr_pc << std::endl;
     }
 }
@@ -213,40 +214,40 @@ void Chip8::init_font()
 
 void Chip8::init_opcode_table()
 {
-  _opcode_table[0x00E0 & _opcode] = &Chip8::inst_00E0;
-  _opcode_table[0x00EE0 & _opcode] = &Chip8::inst_00EE;
-  _opcode_table[0x1FFF0 & _opcode] = &Chip8::inst_1NNN;
-  _opcode_table[0x2FFF0 & _opcode] = &Chip8::inst_2NNN;
-  _opcode_table[0x3FFF0 & _opcode] = &Chip8::inst_3XNN;
-  _opcode_table[0x4FFF0 & _opcode] = &Chip8::inst_4XNN;
-  _opcode_table[0x5FF00 & _opcode] = &Chip8::inst_5XY0;
-  _opcode_table[0x6FFF0 & _opcode] = &Chip8::inst_6XNN;
-  _opcode_table[0x7FFF0 & _opcode] = &Chip8::inst_7XNN;
-  _opcode_table[0x8FF00 & _opcode] = &Chip8::inst_8XY0;
-  _opcode_table[0x8FF10 & _opcode] = &Chip8::inst_8XY1;
-  _opcode_table[0x8FF20 & _opcode] = &Chip8::inst_8XY2;
-  _opcode_table[0x8FF30 & _opcode] = &Chip8::inst_8XY3;
-  _opcode_table[0x8FF40 & _opcode] = &Chip8::inst_8XY4;
-  _opcode_table[0x8FF50 & _opcode] = &Chip8::inst_8XY5;
-  _opcode_table[0x8FF60 & _opcode] = &Chip8::inst_8XY6;
-  _opcode_table[0x8FF70 & _opcode] = &Chip8::inst_8XY7;
-  _opcode_table[0x8FFE0 & _opcode] = &Chip8::inst_8XYE;
-  _opcode_table[0x9FF00 & _opcode] = &Chip8::inst_9XY0; 
-  _opcode_table[0xAFFF0 & _opcode] = &Chip8::inst_ANNN;
-  _opcode_table[0xBFFF0 & _opcode] = &Chip8::inst_BNNN;
-  _opcode_table[0xCFFF0 & _opcode] = &Chip8::inst_CXNN;
-  _opcode_table[0xDFFF0 & _opcode] = &Chip8::inst_DXYN;
-  _opcode_table[0xEF9E0 & _opcode] = &Chip8::inst_EX9E;
-  _opcode_table[0xEFA10 & _opcode] = &Chip8::inst_EXA1;
-  _opcode_table[0xFF070 & _opcode] = &Chip8::inst_FX07;
-  _opcode_table[0xFF0A0 & _opcode] = &Chip8::inst_FX0A;
-  _opcode_table[0xFF150 & _opcode] = &Chip8::inst_FX15;
-  _opcode_table[0xFF180 & _opcode] = &Chip8::inst_FX18;
-  _opcode_table[0xFF1E0 & _opcode] = &Chip8::inst_FX1E;
-  _opcode_table[0xFF290 & _opcode] = &Chip8::inst_FX29;
-  _opcode_table[0xFF330 & _opcode] = &Chip8::inst_FX33;
-  _opcode_table[0xFF550 & _opcode] = &Chip8::inst_FX55;
-  _opcode_table[0xFF650 & _opcode] = &Chip8::inst_FX65;
+  _opcode_table[0x00E0] = &Chip8::inst_00E0;
+  _opcode_table[0x00EE] = &Chip8::inst_00EE;
+  _opcode_table[0x1FFF] = &Chip8::inst_1NNN;
+  _opcode_table[0x2FFF] = &Chip8::inst_2NNN;
+  _opcode_table[0x3FFF] = &Chip8::inst_3XNN;
+  _opcode_table[0x4FFF] = &Chip8::inst_4XNN;
+  _opcode_table[0x5FF0] = &Chip8::inst_5XY0;
+  _opcode_table[0x6FFF] = &Chip8::inst_6XNN;
+  _opcode_table[0x7FFF] = &Chip8::inst_7XNN;
+  _opcode_table[0x8FF0] = &Chip8::inst_8XY0;
+  _opcode_table[0x8FF1] = &Chip8::inst_8XY1;
+  _opcode_table[0x8FF2] = &Chip8::inst_8XY2;
+  _opcode_table[0x8FF3] = &Chip8::inst_8XY3;
+  _opcode_table[0x8FF4] = &Chip8::inst_8XY4;
+  _opcode_table[0x8FF5] = &Chip8::inst_8XY5;
+  _opcode_table[0x8FF6] = &Chip8::inst_8XY6;
+  _opcode_table[0x8FF7] = &Chip8::inst_8XY7;
+  _opcode_table[0x8FFE] = &Chip8::inst_8XYE;
+  _opcode_table[0x9FF0] = &Chip8::inst_9XY0; 
+  _opcode_table[0xAFFF] = &Chip8::inst_ANNN;
+  _opcode_table[0xBFFF] = &Chip8::inst_BNNN;
+  _opcode_table[0xCFFF] = &Chip8::inst_CXNN;
+  _opcode_table[0xDFFF] = &Chip8::inst_DXYN;
+  _opcode_table[0xEF9E] = &Chip8::inst_EX9E;
+  _opcode_table[0xEFA1] = &Chip8::inst_EXA1;
+  _opcode_table[0xFF07] = &Chip8::inst_FX07;
+  _opcode_table[0xFF0A] = &Chip8::inst_FX0A;
+  _opcode_table[0xFF15] = &Chip8::inst_FX15;
+  _opcode_table[0xFF18] = &Chip8::inst_FX18;
+  _opcode_table[0xFF1E] = &Chip8::inst_FX1E;
+  _opcode_table[0xFF29] = &Chip8::inst_FX29;
+  _opcode_table[0xFF33] = &Chip8::inst_FX33;
+  _opcode_table[0xFF55] = &Chip8::inst_FX55;
+  _opcode_table[0xFF65] = &Chip8::inst_FX65;
 }
 
 /**
