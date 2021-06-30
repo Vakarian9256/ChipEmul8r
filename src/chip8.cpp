@@ -24,6 +24,7 @@ Chip8::Chip8(const std::string& path) :  _opcode(0), _graphics(RES_WIDTH, RES_HE
     std::memset(&_display, 0, sizeof(_display));
     std::memset(&_timer, 0, sizeof(_timer));    
     init_font();
+    init_opcode_table();
     load_game(path);
     std::srand(std::time(nullptr));
 }
