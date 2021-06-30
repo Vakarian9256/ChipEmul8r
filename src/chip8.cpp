@@ -9,7 +9,11 @@
 
 #include "chip8.h"
 
-
+/**
+ * @brief Construct a new Chip 8:: Chip 8 object
+ * 
+ * @param path - the path to the ROM
+ */
 Chip8::Chip8(const std::string& path) :  _opcode(0), _graphics(RES_WIDTH, RES_HEIGHT, SCALE_FACTOR, path)
 {
     _memory.fill(0);
@@ -24,6 +28,7 @@ Chip8::Chip8(const std::string& path) :  _opcode(0), _graphics(RES_WIDTH, RES_HE
     init_opcode_table();
     std::srand(std::time(nullptr));
 }
+
 
 void Chip8::run()
 {
@@ -52,6 +57,7 @@ void Chip8::run()
         std::this_thread::sleep_for(std::chrono::microseconds(2000)); // delay
 	}
 }
+
 
 void Chip8::update_key(const sf::Event& event, uint8_t state)
 {
@@ -151,13 +157,17 @@ void Chip8::update_timers()
     {
         if (_timer._sound == 1)
         {
-            std::cout << '\a' << std::endl; // put in a sound alert
+            std::cout << '\a' << std::endl; // \a generates a sound
         }
         _timer._sound--;  
     }
 }
 
-
+/**
+ * @brief 
+ * 
+ * @param path path to the ROM
+ */
 void Chip8::load_game(const std::string& path)
 {
     std::ifstream game_file (path, std::ifstream::ate | std::ifstream::binary);
@@ -172,6 +182,7 @@ void Chip8::load_game(const std::string& path)
     game_file.seekg(std::ifstream::beg);
     game_file.read(reinterpret_cast<char*>(_memory.data() + PROGRAM_START_ADDRESS), MEMORY_SIZE);
 }
+
 
 void Chip8::init_opcode_args()
 {
@@ -244,12 +255,20 @@ void Chip8::init_opcode_table()
   _opcode_table[0xFF65] = &Chip8::inst_FX65;
 }
 
+/**
+ * @brief Clears the screen. 
+ * 
+ */
 void Chip8::inst_00E0()
 {
     std::memset(&_display, 0, sizeof(_display));
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Returns from a subroutine. 
+ * 
+ */
 void Chip8::inst_00EE()
 {
     if (_cpu.sp > 0)
@@ -263,11 +282,19 @@ void Chip8::inst_00EE()
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Jumps to address NNN. 
+ * 
+ */
 void Chip8::inst_1NNN()
 {
     _cpu.pc = _opcode_args.nnn;
 }
 
+/**
+ * @brief Calls subroutine at NNN. 
+ * 
+ */
 void Chip8::inst_2NNN()
 {
     if (_cpu.sp < (_stack.size() - 1))
@@ -281,6 +308,10 @@ void Chip8::inst_2NNN()
     }
 }
 
+/**
+ * @brief Skips the next instruction if VX equals NN. (Usually the next instruction is a jump to skip a code block); 
+ * 
+ */
 void Chip8::inst_3XNN()
 {
     if (_cpu.v[_opcode_args.x] == _opcode_args.nn)
@@ -290,6 +321,10 @@ void Chip8::inst_3XNN()
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Skips the next instruction if VX does not equal NN. (Usually the next instruction is a jump to skip a code block); 
+ * 
+ */
 void Chip8::inst_4XNN()
 {
     if(_cpu.v[_opcode_args.x] != _opcode_args.nn)
@@ -299,6 +334,10 @@ void Chip8::inst_4XNN()
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Skips the next instruction if VX equals VY. (Usually the next instruction is a jump to skip a code block); 
+ * 
+ */
 void Chip8::inst_5XY0()
 {
     if (_cpu.v[_opcode_args.x] == _cpu.v[_opcode_args.y])
@@ -308,43 +347,70 @@ void Chip8::inst_5XY0()
     _cpu.pc += 2;
 }
 
-
+/**
+ * @brief Sets VX to NN. 
+ * 
+ */
 void Chip8::inst_6XNN()
 {
     _cpu.v[_opcode_args.x] = _opcode_args.nn;
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Adds NN to VX. (Carry flag is not changed); 
+ * 
+ */
 void Chip8::inst_7XNN()
 {
     _cpu.v[_opcode_args.x] += _opcode_args.nn;
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Sets VX to the value of VY. 
+ * 
+ */
 void Chip8::inst_8XY0()
 {
     _cpu.v[_opcode_args.x] = _cpu.v[_opcode_args.y];
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Sets VX to VX or VY. (Bitwise OR operation); 
+ * 
+ */
 void Chip8::inst_8XY1()
 {
     _cpu.v[_opcode_args.x] |= _cpu.v[_opcode_args.y];
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Sets VX to VX and VY. (Bitwise AND operation); 
+ * 
+ */
 void Chip8::inst_8XY2()
 {
     _cpu.v[_opcode_args.x] &= _cpu.v[_opcode_args.y];
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Sets VX to VX xor VY. 
+ * 
+ */
 void Chip8::inst_8XY3()
 {
     _cpu.v[_opcode_args.x] ^= _cpu.v[_opcode_args.y];
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Adds VY to VX. VF is set to 1 when there's a carry, and to 0 when there is not. 
+ * 
+ */
 void Chip8::inst_8XY4()
 {
     _cpu.v[0xF] = (_cpu.v[_opcode_args.x] + _cpu.v[_opcode_args.y]) > 0x00FF ? 1 : 0;
@@ -352,6 +418,10 @@ void Chip8::inst_8XY4()
     _cpu.pc += 2;
 }
 
+/**
+ * @brief VY is subtracted from VX. VF is set to 0 when there's a borrow, and 1 when there is not. 
+ * 
+ */
 void Chip8::inst_8XY5()
 {
     _cpu.v[0xF] = _cpu.v[_opcode_args.x] < _cpu.v[_opcode_args.y] ? 0 : 1;
@@ -359,6 +429,10 @@ void Chip8::inst_8XY5()
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Stores the least significant bit of VX in VF and then shifts VX to the right by 1.
+ * 
+ */
 void Chip8::inst_8XY6()
 {
     _cpu.v[0xF] = _cpu.v[_opcode_args.x] & 0x1u;
@@ -366,6 +440,10 @@ void Chip8::inst_8XY6()
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Sets VX to VY minus VX. VF is set to 0 when there's a borrow, and 1 when there is not. 
+ * 
+ */
 void Chip8::inst_8XY7()
 {
     _cpu.v[0xF] = _cpu.v[_opcode_args.x] > _cpu.v[_opcode_args.y] ? 0 : 1;
@@ -373,6 +451,10 @@ void Chip8::inst_8XY7()
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Stores the most significant bit of VX in VF and then shifts VX to the left by 1.
+ * 
+ */
 void Chip8::inst_8XYE()
 {
     _cpu.v[0xF] = _cpu.v[_opcode_args.x] >> 7;
@@ -380,6 +462,10 @@ void Chip8::inst_8XYE()
     _cpu.pc += 2;
 }   
 
+/**
+ * @brief Skips the next instruction if VX does not equal VY. (Usually the next instruction is a jump to skip a code block)
+ * 
+ */
 void Chip8::inst_9XY0()
 {
     if (_cpu.v[_opcode_args.x] != _cpu.v[_opcode_args.y])
@@ -389,23 +475,41 @@ void Chip8::inst_9XY0()
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Sets I to the address NNN. 
+ * 
+ */
 void Chip8::inst_ANNN()
 {
     _cpu.i = _opcode_args.nnn;
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Jumps to the address NNN plus V0. 
+ * 
+ */
 void Chip8::inst_BNNN()
 {
     _cpu.pc = _cpu.v[0] + _opcode_args.nnn;
 }
 
+/**
+ * @brief Sets VX to the result of a bitwise and operation on a random number (Typically: 0 to 255) and NN. 
+ * 
+ */
 void Chip8::inst_CXNN()
 {
     _cpu.v[_opcode_args.x] = (std::rand() % (MAX_VAL + 1)) & _opcode_args.nn;
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Draws a sprite at coordinate (VX, VY) that has a width of 8 pixels and a height of N+1 pixels.
+ *  Each row of 8 pixels is read as bit-coded starting from memory location I; I value does not change after the execution of this instruction. As described above, VF is set to 1 if any 
+ *  screen pixels are flipped from set to unset when the sprite is drawn, and to 0 if that does not happen 
+ * 
+ */
 void Chip8::inst_DXYN()
 {
     uint8_t coord_x = _cpu.v[_opcode_args.x];
@@ -432,6 +536,11 @@ void Chip8::inst_DXYN()
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Skips the next instruction if the key stored in VX is pressed.
+ *  (Usually the next instruction is a jump to skip a code block)
+ * 
+ */
 void Chip8::inst_EX9E()
 {
     if (_keypad[_cpu.v[_opcode_args.x]] == static_cast<uint16_t>(Key_state::pressed))
@@ -441,6 +550,10 @@ void Chip8::inst_EX9E()
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Skips the next instruction if the key stored in VX is not pressed. 
+ * (Usually the next instruction is a jump to skip a code block)
+ */
 void Chip8::inst_EXA1()
 {
     if (_keypad[_cpu.v[_opcode_args.x]] == static_cast<uint16_t>(Key_state::released))
@@ -450,12 +563,19 @@ void Chip8::inst_EXA1()
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Sets VX to the value of the delay timer. 
+ */
 void Chip8::inst_FX07()
 {
     _cpu.v[_opcode_args.x] = _timer._delay;
     _cpu.pc += 2;
 }
 
+/**
+ * @brief A key press is awaited, and then stored in VX. 
+ * (Blocking Operation. All instruction halted until next key event)
+ */
 void Chip8::inst_FX0A()
 {
     for (int i = 0; i < _keypad.size(); i++)
@@ -469,18 +589,27 @@ void Chip8::inst_FX0A()
     }
 }
 
+/**
+ * @brief Sets the delay timer to VX. 
+ */
 void Chip8::inst_FX15()
 {
     _timer._delay = _cpu.v[_opcode_args.x];
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Sets the sound timer to VX.  
+ */
 void Chip8::inst_FX18()
 {
     _timer._sound = _cpu.v[_opcode_args.x];
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Adds VX to I. VF is not affected.
+ */
 void Chip8::inst_FX1E()
 {
     _cpu.v[0xF] = (_cpu.i + _cpu.v[_opcode_args.x]) > 0x00FF ? 1 : 0;
@@ -488,12 +617,23 @@ void Chip8::inst_FX1E()
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Sets I to the location of the sprite for the character in VX.
+ *  Characters 0-F (in hexadecimal) are represented by a 4x5 font. 
+ */
 void Chip8::inst_FX29()
 {
     _cpu.i = _cpu.v[_opcode_args.x] * 5;
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Stores the binary-coded decimal representation of VX, 
+ * with the most significant of three digits at the address in I,
+ *  the middle digit at I plus 1, and the least significant digit at I plus 2. 
+ * (In other words, take the decimal representation of VX, place the hundreds digit in memory at location in I, 
+ * the tens digit at location I+1, and the ones digit at location I+2.)
+ */
 void Chip8::inst_FX33()
 {
     _memory[_cpu.i] = _cpu.v[_opcode_args.x] / 100;
@@ -502,6 +642,10 @@ void Chip8::inst_FX33()
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Stores V0 to VX (including VX) in memory starting at address I. 
+ * The offset from I is increased by 1 for each value written, but I itself is left unmodified.
+ */
 void Chip8::inst_FX55()
 {
     for (int i = 0; i <= _opcode_args.x; i++)
@@ -511,6 +655,10 @@ void Chip8::inst_FX55()
     _cpu.pc += 2;
 }
 
+/**
+ * @brief Fills V0 to VX (including VX) with values from memory starting at address I.
+ *  The offset from I is increased by 1 for each value written, but I itself is left unmodified. 
+ */
 void Chip8::inst_FX65()
 {
     for (int i = 0; i <= _opcode_args.x; i++)
