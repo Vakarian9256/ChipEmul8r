@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <array>
-#include <map>
+#include <unordered_map>
 
 #include "graphics.h"
 
@@ -110,7 +110,7 @@ private:
     std::array<uint16_t, KEY_AMOUNT> _keypad;
     template<typename T>
     using Inst_fun = void (T::*)();
-    std::map<uint16_t, Inst_fun<Chip8>> _opcode_table;
+    std::unordered_map<uint16_t, Inst_fun<Chip8>> _opcode_table;
     Graphics _graphics;
 
 };
