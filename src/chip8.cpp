@@ -25,7 +25,6 @@ Chip8::Chip8(const std::string& path) :  _opcode(0), _graphics(RES_WIDTH, RES_HE
     std::memset(&_timer, 0, sizeof(_timer));    
     init_font();
     load_game(path);
-    init_opcode_table();
     std::srand(std::time(nullptr));
 }
 
@@ -124,18 +123,12 @@ void Chip8::handle_opcode()
 {
     _opcode = _memory[_cpu.pc] << 8 | _memory[_cpu.pc + 1];
     const uint16_t curr_pc = _cpu.pc;
-    bool exec_inst = false;
-    for (auto const& entry : _opcode_table)
-    {
-        if (((entry.first & _opcode) == _opcode) && ((entry.first | _opcode) == entry.first))
-        {
-            init_opcode_args();
-            (*this.*entry.second)();
-            exec_inst = true;
-            break;
-        }
-    } 
-    if (!exec_inst)
+    auto inst = std::find_if(_opcode_table.begin(), _opcode_table.end(),
+                             [this](const auto& entry)
+                             {
+                                return (((entry.first & _opcode) == _opcode) && ((entry.first | _opcode) == entry.first));
+                             });
+    if (inst == _opcode_table.end())
     {
         std::stringstream hex;
         hex << "0x" << std::hex << _opcode << " at address 0x" << std::hex << curr_pc << std::endl;
@@ -143,6 +136,8 @@ void Chip8::handle_opcode()
     }
     else
     {
+        init_opcode_args();
+        (this->*((*inst).second))();
         std::cout << "Executed Opcode " << "0x" << std::hex << _opcode << " at address 0x" << std::hex << curr_pc << std::endl;
     }
 }
