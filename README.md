@@ -1,2 +1,2 @@
 # ChipEmul8r
-An emulator for a [Chip8 infstructure](https://en.wikipedia.org/wiki/CHIP-8).
+An emulator implemented in C++ for games written for [Chip-8 infrastructure](https://en.wikipedia.org/wiki/CHIP-8).
